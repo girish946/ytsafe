@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from __future__ import unicode_literals
+#from __future__ import unicode_literals
 
 __version__ = "0.3.58"
 __author__ = "nagev"
@@ -40,6 +40,14 @@ import json
 import logging
 from xml.etree import ElementTree
 
+from  org.eclipse.swt.widgets import *
+from  org.eclipse.swt.layout import *
+from  org.eclipse.swt import SWT
+from  org.eclipse.swt.graphics import Image
+from java.lang import String
+from java.lang.reflect import Array
+import java
+import threading
 
 early_py_version = sys.version_info[:2] < (2, 7)
 
@@ -61,6 +69,29 @@ if os.environ.get("pafydebug") == "1":
     logging.basicConfig(level=logging.DEBUG)
 
 dbg = logging.debug
+
+
+class showShell:
+
+    def stayAwake(self):
+        while ( not self.shell.isDisposed()):
+            if (not self.display.readAndDispatch()):
+                self.display.sleep()
+    def __init__(self):
+        self.display = Display.getDefault()
+        self.shell = Shell() 
+        self.shell.setSize(423, 362) 
+        self.shell.setText("Youtube Video Downloader") 
+        self.small = Image(self.display,"images/logo.JPG")
+        self.shell.setImage(self.small)
+        self.progress = ProgressBar(self.shell, SWT.NONE)
+        self.progress.setBounds(10, 150, 195, 15)
+        self.shell.open()
+        self.shell.layout()
+        t = threading.Thread(target=self.stayAwake ,args = (self))
+    def setProgressVal(self, val):
+        self.progress.setSelection(int(val))
+        return
 
 
 def parseqs(data):
@@ -795,10 +826,11 @@ class Stream(object):
         Use meta=True to append video id and itag to generated filename
 
         """
+        
         # pylint: disable=R0912,R0914
         # Too many branches, too many local vars
         savedir = filename = ""
-
+        window = showShell()
         if filepath and os.path.isdir(filepath):
             savedir, filename = filepath, self.generate_filename()
 
@@ -850,15 +882,16 @@ class Stream(object):
             rate = ((bytesdone - offset) / 1024) / elapsed
             eta = (total - bytesdone) / (rate * 1024)
             progress_stats = (bytesdone, bytesdone * 1.0 / total, rate, eta)
-
+            percent = ((bytesdone * 1.0 / total) * 100)
             if not chunk:
                 outfh.close()
                 break
 
             if not quiet:
                 status = status_string.format(*progress_stats)
-                sys.stdout.write("\r" + status + ' ' * 4 + "\r")
-                sys.stdout.flush()
+                #sys.stdout.write("\r" + status + ' ' * 4 + "\r")
+                #sys.stdout.flush()
+		window.setProgressVal(percent)
 
             if callback:
                 callback(total, *progress_stats)
@@ -870,6 +903,7 @@ class Stream(object):
         else:
             outfh.close()
             return temp_filepath
+        
 
 
 class Pafy(object):
@@ -1340,8 +1374,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
                            size=size,
                            callback=callback)
 
-        except IOError as e:
-            callback("%s: %s" % (v['title'], e.message))
+        except IOError :
+            #callback("%s: %s" % (v['title'], e.message))
             continue
 
         pafy_obj.populate_from_playlist(vid_data)
