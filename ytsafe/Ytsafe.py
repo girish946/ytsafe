@@ -6,14 +6,33 @@ from  org.eclipse.swt.graphics import Image
 from java.lang import String
 from java.lang.reflect import Array
 import java
-import threading
+from pafy import pafy  
+
+
+def fetch_details():
+	try:
+		video =pafy.new( urlText.getText())
+		details ={"title":video.title, "rating":video.rating, "views":video.viewcount, "author":video.author, "length":video.length , "dueration":video.duration, "likes":video.likes, "dislikes":video.dislikes }
+		discreption = video.description
+		for d in details:
+				print d+"     "+ str(details[d]).replace(u'\u2019', u'\'').encode('ascii', 'ignore')
+		global streams
+		streams =video.streams
+		item_elements = java.lang.reflect.Array.newInstance(java.lang.String,[3])
+		table.removeAll()
+		print "available strems"
+		for s in streams:
+			print str(s).replace(u'\u2019', u'\'').encode('ascii', 'ignore')
+	except Exception , err:
+		print "error"+str(err.message)
+		fetch_details()
 
 class start:
 	
 	class MyListener(Listener):
 		def handleEvent(self, event):
 			if event.widget == fetch:
-				print "get_details clicked"
+				fetch_details()
 			if event.widget == down_load:
 				print "download clicked"
 
