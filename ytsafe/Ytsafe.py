@@ -23,6 +23,11 @@ def fetch_details():
 		print "available strems"
 		for s in streams:
 			print str(s).replace(u'\u2019', u'\'').encode('ascii', 'ignore')
+			item_elements[0]=str(s.resolution)
+			item_elements[2]=str(s.get_filesize())
+			item_elements[1]=str(s.extension)
+			ti = TableItem(table, SWT.NONE)
+			ti.setText(item_elements)	
 	except Exception , err:
 		print "error"+str(err.message)
 		fetch_details()
@@ -34,7 +39,11 @@ class start:
 			if event.widget == fetch:
 				fetch_details()
 			if event.widget == down_load:
-				print "download clicked"
+				try:
+					print "download "+ str(table.getSelectionIndex())+" "+str(streams[ table.getSelectionIndex()])
+					streams[ table.getSelectionIndex()] .download()
+				except Exception , err:
+					print "nothing selected"
 
 	def __init__(self):
 		self.display = Display.getDefault()
